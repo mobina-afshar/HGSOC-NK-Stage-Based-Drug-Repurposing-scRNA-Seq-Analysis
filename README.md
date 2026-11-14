@@ -151,7 +151,7 @@ The poster was presented at the **3rd International Congress of Cancer Genomics 
 ## Repository Structure
 
 ```text
-HGSOC-NK-Drug-Repurposing/
+HGSOC-NK-Stage-Based-Drug-Repurposing-scRNA-Seq-Analysis/
 │
 ├── README.md
 ├── LICENSE
