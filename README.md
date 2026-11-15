@@ -153,36 +153,55 @@ The poster was presented at the **3rd International Congress of Cancer Genomics 
 ```text
 HGSOC-NK-Stage-Based-Drug-Repurposing-scRNA-Seq-Analysis/
 │
-├── README.md
-├── LICENSE
-├── .gitignore
+├── Presentation_materials/
+│   ├── Cancer Genomics Poster.jpg
+│   └── Cancer Genomics abstract.pdf
 │
-├── poster/
-│   └── HGSOC_Poster.pdf
-│
-├── scripts/
-│   ├── 01_Quality_Control.R
-│   ├── 02_Seurat_Clustering_Annotation.R
-│   ├── 03_NK_Cell_Selection.R
-│   ├── 04_Pseudobulk_DESeq2.R
-│   ├── 05_Hallmark_GSEA.R
-│   └── 06_Drug_Repurposing.R
-│
-├── figures/
-│   ├── Immune_Cell_Landscape/
-│   ├── Hallmark_GSEA/
-│   └── CMap_Candidates/
-│
-├── results/
-│   ├── DESeq2/
-│   ├── GSEA/
+├── Results/
+│   ├── Clustering/
+│   │   └── Global_cluster_sizes.csv
+│   │
 │   ├── CMap/
-│   ├── DGIdb/
-│   └── DrugBank/
+│   │   ├── CMap_results.xlsx
+│   │   └── CMap_Candidates.png
+│   │
+│   ├── GSEA/
+│   │   └── Hallmark_GSEA_exploratory_nominalP05_NK_like.csv
+│   │
+│   ├── Metadata/
+│   │   └── sample_metadata.csv
+│   │
+│   ├── Pseudobulk/
+│   │   ├── DESeq2_Late_vs_Early_NK_like.csv
+│   │   └── NK_like_DESeq2_all_results.csv
+│   │
+│   ├── QC/
+│   │   ├── QC_after_filtering.png
+│   │   └── QC_before_filtering.png
+│   │
+│   ├── RDS/
+│   │   ├── NK_ILC3_StageAnalysis_Object.rds
+│   │   ├── pseudobulk_counts.rds
+│   │   └── DESeq2_Results_All_Populations.rds
+│   │
+│   └── Umap/
+│       ├── Final_TNK_ILC_Umap.png
+│       └── Global_umap_clusters.png
 │
-└── docs/
-    ├── Abstract.pdf
-    └── Methods.md
+├── Scripts/
+│   ├── 01_Project_Setup.R
+│   ├── 02_Data_Import_and_QC.R
+│   ├── 03_Preprocessing_and_Clustering.R
+│   ├── 04_SingleR_Annotation.R
+│   ├── 05_CellTypist_Annotation.R
+│   ├── 06_TNK_ILC_Subclustering_and_Annotation.R
+│   ├── 07_NK_ILC3_Selection_and_Pseudobulk.R
+│   ├── 08_DESeq2_Stage_Analysis.R
+│   ├── 09_Hallmark_GSEA.R
+│   └── 10_CMap_and_Drug_Annotation.R
+│   └── config.yaml
+│
+└── README.md
 ```
 
 *The directory and script names above describe the intended organization. Actual filenames may differ depending on the analysis files included in the repository.*
