@@ -3,38 +3,41 @@
 # GSE184880 - HGSOC scRNA-seq Analysis
 # Script 09: Preranked Hallmark GSEA
 #
-# Workflow: Stage-Based Drug Repurposing in HGSOC
+# Workflow:
+# Stage-Based Drug Repurposing in High-Grade Serous
+# Ovarian Cancer
 #
 # Purpose:
 # Perform preranked Hallmark Gene Set Enrichment Analysis
 # using patient-level pseudobulk DESeq2 results.
 #
-# Cell populations:
+# Cell Populations:
 # - Cluster 0  -> NK-like
 # - Cluster 11 -> ILC3
 #
 # Comparison:
 # - Late vs Early
 #
-# Main downstream population:
+# Main Downstream Population:
 # - NK-like -> CMap / Drug Repurposing
 #
 # ILC3:
 # - Complementary pathway analysis only
 #
-# Input:
+# Input Files:
 # - config.yaml
 # - results/rds/DESeq2_Results_All_Populations.rds
 #
-# Output:
+# Output Files:
 # - Population-specific gene rankings
 # - Population-specific Hallmark GSEA results
 # - FDR-filtered and exploratory pathway tables
 # - Combined Hallmark GSEA results
 # - GSEA results and parameters in RDS format
-# - logs/09_hallmark_gsea_sessionInfo.txt
+# - NK-like Hallmark GSEA figures
+# - Session information
 #
-# IMPORTANT:
+# Important Notes:
 # - All genes with valid DESeq2 Wald statistics are ranked.
 # - No adjusted P-value filter is applied before GSEA.
 # - Positive Wald statistics indicate higher expression in Late.
@@ -49,6 +52,8 @@
 # 1. Load Project Configuration
 ############################################################
 
+# Check whether the project configuration file exists.
+
 if (!file.exists("config.yaml")) {
   
   stop(
@@ -57,6 +62,8 @@ if (!file.exists("config.yaml")) {
   )
 }
 
+
+# Check whether the required configuration package is installed.
 
 if (!requireNamespace("yaml", quietly = TRUE)) {
   
@@ -128,7 +135,7 @@ dir.create(
 )
 
 
-# Set project-wide random seed.
+# Set the project-wide random seed.
 
 set.seed(cfg$project$seed)
 
@@ -197,15 +204,26 @@ save_session <- function(tag) {
 # 3. Load Required Packages
 ############################################################
 
+# Check and load packages required for GSEA and visualization.
+
 require_pkgs(
   c(
     "fgsea",
-    "msigdbr"
+    "msigdbr",
+    "ggplot2",
+    "dplyr",
+    "stringr"
   )
 )
 
+
+# Load required packages.
+
 library(fgsea)
 library(msigdbr)
+library(ggplot2)
+library(dplyr)
+library(stringr)
 
 
 ############################################################
@@ -267,7 +285,12 @@ exploratory_p_cutoff <- as.numeric(
 
 # Validate gene set size parameters.
 
-if (min_size < 1 || max_size <= min_size) {
+if (
+  is.na(min_size) ||
+  is.na(max_size) ||
+  min_size < 1 ||
+  max_size <= min_size
+) {
   
   stop(
     "Invalid GSEA min_size or max_size."
@@ -277,17 +300,26 @@ if (min_size < 1 || max_size <= min_size) {
 
 # Validate fgsea eps parameter.
 
-if (eps_value < 0) {
+if (
+  length(eps_value) != 1 ||
+  !is.finite(eps_value) ||
+  eps_value < 0
+) {
   
   stop(
-    "GSEA eps must be non-negative."
+    "GSEA eps must be a non-negative finite number."
   )
 }
 
 
 # Validate FDR threshold.
 
-if (fdr_cutoff <= 0 || fdr_cutoff > 1) {
+if (
+  length(fdr_cutoff) != 1 ||
+  !is.finite(fdr_cutoff) ||
+  fdr_cutoff <= 0 ||
+  fdr_cutoff > 1
+) {
   
   stop(
     "Invalid GSEA FDR cutoff."
@@ -298,6 +330,8 @@ if (fdr_cutoff <= 0 || fdr_cutoff > 1) {
 # Validate exploratory nominal P-value threshold.
 
 if (
+  length(exploratory_p_cutoff) != 1 ||
+  !is.finite(exploratory_p_cutoff) ||
   exploratory_p_cutoff <= 0 ||
   exploratory_p_cutoff > 1
 ) {
@@ -315,13 +349,11 @@ if (
 cat("\n")
 
 cat("============================================================\n")
-
 cat("LOADING DESeq2 RESULTS\n")
-
 cat("============================================================\n")
 
 
-# Define input file.
+# Define the input file.
 
 de_file <- file.path(
   RDS_DIR,
@@ -352,9 +384,7 @@ expected_populations <- c(
   "ILC3"
 )
 
-if (!all(
-  expected_populations %in% names(de_list)
-)) {
+if (!all(expected_populations %in% names(de_list))) {
   
   stop(
     "Expected populations NK-like and ILC3 ",
@@ -453,7 +483,17 @@ for (population_name in expected_populations) {
   
   # Check whether Ensembl gene IDs are being used.
   
-  if (all(grepl("^ENSG", tab$gene))) {
+  gene_ids <- as.character(tab$gene)
+  
+  valid_gene_ids <- gene_ids[
+    !is.na(gene_ids) &
+      nzchar(gene_ids)
+  ]
+  
+  if (
+    length(valid_gene_ids) > 0 &&
+    any(grepl("^ENSG", valid_gene_ids))
+  ) {
     
     stop(
       "Ensembl gene IDs detected in ",
@@ -472,9 +512,7 @@ for (population_name in expected_populations) {
 cat("\n")
 
 cat("============================================================\n")
-
 cat("LOADING HALLMARK GENE SETS\n")
-
 cat("============================================================\n")
 
 
@@ -703,17 +741,17 @@ run_gsea <- function(tab, population_name) {
   
   
   ##########################################################
-  # 9.1 Prepare Gene Ranking
+  # 9.1. Prepare Gene Ranking
   ##########################################################
   
   ranks <- make_ranks(
-    tab,
-    population_name
+    tab = tab,
+    population_name = population_name
   )
   
   
   ##########################################################
-  # 9.2 Save Ranked Gene Statistics
+  # 9.2. Save Ranked Gene Statistics
   ##########################################################
   
   ranking_df <- data.frame(
@@ -738,9 +776,7 @@ run_gsea <- function(tab, population_name) {
   # Export the complete ranked gene list.
   
   write.csv(
-    
     ranking_df,
-    
     output_file(
       "gsea",
       paste0(
@@ -749,35 +785,34 @@ run_gsea <- function(tab, population_name) {
         ".csv"
       )
     ),
-    
     row.names = FALSE
   )
   
   
   ##########################################################
-  # 9.3 Run fgsea
+  # 9.3. Run fgsea
   ##########################################################
   
-  # Perform preranked Hallmark GSEA using Wald statistics.
+  # Reset the random seed immediately before fgsea.
+  # This ensures reproducible results for each population.
+  
+  set.seed(cfg$project$seed)
+  
+  
+  # Perform preranked Hallmark GSEA.
   
   gsea_results <- fgsea(
-    
     pathways = pathways,
-    
     stats = ranks,
-    
     minSize = min_size,
-    
     maxSize = max_size,
-    
     eps = eps_value,
-    
     nproc = 1
   )
   
   
   ##########################################################
-  # 9.4 Format GSEA Results
+  # 9.4. Format GSEA Results
   ##########################################################
   
   # Convert fgsea output to a data frame.
@@ -785,6 +820,19 @@ run_gsea <- function(tab, population_name) {
   gsea_results <- as.data.frame(
     gsea_results
   )
+  
+  
+  # Check whether any pathways were returned.
+  
+  if (nrow(gsea_results) == 0) {
+    
+    warning(
+      "No Hallmark pathways passed the size criteria for ",
+      population_name
+    )
+    
+    return(gsea_results)
+  }
   
   
   # Convert the leadingEdge list-column to character strings.
@@ -802,19 +850,6 @@ run_gsea <- function(tab, population_name) {
       
       FUN.VALUE = character(1)
     )
-  }
-  
-  
-  # Check whether any pathways were returned.
-  
-  if (nrow(gsea_results) == 0) {
-    
-    warning(
-      "No Hallmark pathways passed the size criteria for ",
-      population_name
-    )
-    
-    return(gsea_results)
   }
   
   
@@ -855,13 +890,11 @@ run_gsea <- function(tab, population_name) {
   
   
   ##########################################################
-  # 9.5 Save Complete GSEA Results
+  # 9.5. Save Complete GSEA Results
   ##########################################################
   
   write.csv(
-    
     gsea_results,
-    
     output_file(
       "gsea",
       paste0(
@@ -870,13 +903,12 @@ run_gsea <- function(tab, population_name) {
         ".csv"
       )
     ),
-    
     row.names = FALSE
   )
   
   
   ##########################################################
-  # 9.6 Save FDR-Significant Pathways
+  # 9.6. Save FDR-Significant Pathways
   ##########################################################
   
   significant_results <- gsea_results[
@@ -890,9 +922,7 @@ run_gsea <- function(tab, population_name) {
   
   
   write.csv(
-    
     significant_results,
-    
     output_file(
       "gsea",
       paste0(
@@ -901,13 +931,12 @@ run_gsea <- function(tab, population_name) {
         ".csv"
       )
     ),
-    
     row.names = FALSE
   )
   
   
   ##########################################################
-  # 9.7 Save Exploratory Nominal P-Value Results
+  # 9.7. Save Exploratory Nominal P-Value Results
   ##########################################################
   
   exploratory_results <- gsea_results[
@@ -921,9 +950,7 @@ run_gsea <- function(tab, population_name) {
   
   
   write.csv(
-    
     exploratory_results,
-    
     output_file(
       "gsea",
       paste0(
@@ -932,13 +959,12 @@ run_gsea <- function(tab, population_name) {
         ".csv"
       )
     ),
-    
     row.names = FALSE
   )
   
   
   ##########################################################
-  # 9.8 Print Population-Specific Summary
+  # 9.8. Print Population-Specific Summary
   ##########################################################
   
   cat(
@@ -977,9 +1003,7 @@ run_gsea <- function(tab, population_name) {
 # NK-like: primary population for drug repurposing.
 
 nk_gsea <- run_gsea(
-  
   tab = nk_de,
-  
   population_name = "NK-like"
 )
 
@@ -987,9 +1011,7 @@ nk_gsea <- run_gsea(
 # ILC3: complementary pathway analysis.
 
 ilc3_gsea <- run_gsea(
-  
   tab = ilc3_de,
-  
   population_name = "ILC3"
 )
 
@@ -1009,14 +1031,11 @@ all_gsea <- rbind(
 ############################################################
 
 write.csv(
-  
   all_gsea,
-  
   output_file(
     "gsea",
     "All_Populations_Hallmark_GSEA.csv"
   ),
-  
   row.names = FALSE
 )
 
@@ -1028,14 +1047,10 @@ write.csv(
 # Preserve population-specific result tables.
 
 saveRDS(
-  
   list(
-    
     NK_like = nk_gsea,
-    
     ILC3 = ilc3_gsea
   ),
-  
   output_file(
     "rds",
     "12_Hallmark_GSEA_results.rds"
@@ -1094,9 +1109,7 @@ gsea_parameters <- list(
 # Save analysis parameters.
 
 saveRDS(
-  
   gsea_parameters,
-  
   output_file(
     "gsea",
     "Hallmark_GSEA_Analysis_Parameters.rds"
@@ -1105,24 +1118,139 @@ saveRDS(
 
 
 ############################################################
-# 15. Save Session Information
+# 15. Generate NK-like Hallmark GSEA Figure
 ############################################################
 
-save_session(
-  "09_hallmark_gsea"
+# Convert NK-like GSEA results to a data frame.
+
+gsea_nk <- as.data.frame(
+  nk_gsea
+)
+
+
+# Keep nominally significant pathways.
+
+gsea_nk_sig <- gsea_nk %>%
+  filter(
+    pval < cfg$gsea$exploratory_p_cutoff
+  ) %>%
+  mutate(
+    Direction = ifelse(
+      NES > 0,
+      "Late",
+      "Early"
+    ),
+    Pathway = str_remove(
+      pathway,
+      "^HALLMARK_"
+    ),
+    Pathway = str_replace_all(
+      Pathway,
+      "_",
+      " "
+    )
+  )
+
+
+# Generate the Hallmark GSEA bar plot.
+
+p_nk_hallmark <- ggplot(
+  gsea_nk_sig,
+  aes(
+    x = NES,
+    y = reorder(Pathway, NES),
+    fill = NES
+  )
+) +
+  
+  geom_col(
+    width = 0.68
+  ) +
+  
+  scale_fill_gradient2(
+    low = "#075457",
+    mid = "#9CCBC6",
+    high = "#D8A34A",
+    midpoint = 0,
+    name = "NES"
+  ) +
+  
+  labs(
+    title = "Hallmark GSEA in NK-like Cells",
+    x = "Normalized Enrichment Score (NES)",
+    y = NULL
+  ) +
+  
+  theme_classic(
+    base_size = 13
+  ) +
+  
+  theme(
+    plot.title = element_text(
+      face = "bold",
+      size = 15
+    ),
+    axis.title.x = element_text(
+      face = "bold"
+    ),
+    axis.line = element_line(
+      color = "#8AAEAA"
+    ),
+    legend.position = "right"
+  )
+
+
+# Display the NK-like Hallmark GSEA plot.
+
+print(p_nk_hallmark)
+
+
+############################################################
+# 16. Export NK-like Hallmark GSEA Figure
+############################################################
+
+# Save the figure as a high-resolution PNG file.
+
+ggsave(
+  filename = output_file(
+    "gsea",
+    "Figure_Hallmark_NKlike.png"
+  ),
+  plot = p_nk_hallmark,
+  width = 8,
+  height = 4.5,
+  dpi = 300,
+  bg = "white"
+)
+
+
+# Save the figure as a PDF file.
+
+ggsave(
+  filename = output_file(
+    "gsea",
+    "Figure_Hallmark_NKlike.pdf"
+  ),
+  plot = p_nk_hallmark,
+  width = 8,
+  height = 4.5,
+  bg = "white"
+)
+
+
+message(
+  "NK-like Hallmark GSEA figures saved successfully."
 )
 
 
 ############################################################
-# 16. Final Analysis Summary
+# 17. Final Analysis Summary
 ############################################################
 
 cat("\n")
 
 cat("============================================================\n")
-
 cat("SCRIPT 09: HALLMARK GSEA COMPLETED\n")
-
 cat("============================================================\n")
 
 
@@ -1166,7 +1294,7 @@ cat(
 )
 
 
-# Display output directory.
+# Display the output directory.
 
 cat("\nOutput directory:\n")
 
@@ -1184,10 +1312,32 @@ cat(
   "NK-like -> Script 10: CMap / Drug Repurposing\n"
 )
 
-
 cat("\nNext step: Script 10\n")
 
 
 ############################################################
-# END OF SCRIPT 09
+# 18. Save Session Information
 ############################################################
+
+# Save session information after completing GSEA,
+# exporting all results, and generating figures.
+
+save_session(
+  "09_hallmark_gsea"
+)
+
+
+message(
+  "Session information saved."
+)
+
+
+############################################################
+# SCRIPT COMPLETED
+############################################################
+
+cat("\n")
+
+cat("============================================================\n")
+cat("SCRIPT 09 COMPLETED SUCCESSFULLY\n")
+cat("============================================================\n")
