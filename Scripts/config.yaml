@@ -1,0 +1,53 @@
+# GSE184880 reproducible analysis configuration
+# Run all scripts from the project root: Rscript scripts/01_Project_Setup.R
+
+project:
+  id: "GSE184880"
+  title: "Stage-Based Drug Repurposing in HGSOC Using NK-like and ILC3 scRNA-seq Analysis"
+  seed: 184880
+
+paths:
+  raw_data: "data/raw/GSE184880_RAW"
+  results: "results"
+  logs: "logs"
+  reference: "data/reference"
+
+samples:
+  sample: ["Cancer1", "Cancer2", "Cancer3", "Cancer4", "Cancer5", "Cancer6", "Cancer7"]
+  gsm: ["GSM5599225", "GSM5599226", "GSM5599227", "GSM5599228", "GSM5599229", "GSM5599230", "GSM5599231"]
+  stage: ["IIIB", "IIB", "IC2", "IC2", "IIB", "IIIC", "IC2"]
+  stage_group: ["Late", "Late", "Early", "Early", "Late", "Late", "Early"]
+
+qc:
+  min_features: 200
+  max_features: 10000
+  max_counts: 50000
+  max_percent_mt: 30
+  mt_sensitivity_thresholds: [20, 25, 30]
+
+seurat:
+  n_hvg: 2000
+  n_pcs_global: 20
+  global_resolution: 0.5
+  n_pcs_tnk_ilc: 20
+  tnk_ilc_resolution: 0.4
+
+celltypist:
+  model: "Immune_All_High.pkl"
+  batch_size: 500
+
+pseudobulk:
+  # A patient/population aggregate is the biological replicate.
+  min_cells_per_patient_population: 10
+  min_count_per_gene: 10
+  min_samples_for_gene_filter: 2
+
+cmap:
+  genes_per_direction: 150
+
+gsea:
+  min_size: 15
+  max_size: 500
+  eps: 1.0e-10
+  fdr_cutoff: 0.05
+  exploratory_p_cutoff: 0.05
