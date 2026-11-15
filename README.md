@@ -2,6 +2,8 @@
 
 **Authors:** Mohadeseh Sadat Meftagh, Mobina Afshari Kaveh*
 
+**Corresponding Author:** Mobina Afshari Kaveh
+
 **Affiliations:**
 1. Department of Genetics, Faculty of Sciences and Advanced Technologies in Biology, University of Science and Culture, Tehran, Iran.
 2. Department of Genetics, Reproductive Biomedicine Research Center, Royan Institute for Reproductive Biomedicine, ACECR, Tehran, Iran.
@@ -14,46 +16,70 @@ High-grade serous ovarian cancer (HGSOC) is an aggressive malignancy characteriz
 
 This project integrates single-cell RNA sequencing (scRNA-seq), patient-level pseudobulk differential expression analysis, pathway enrichment, and computational drug-repurposing approaches to investigate stage-associated transcriptional programs in NK-associated populations in HGSOC.
 
-The analysis uses the publicly available dataset **GSE184880** and follows a computational workflow from immune-cell characterization to candidate compound prioritization.
+Using the publicly available dataset **GSE184880**, this study establishes a computational workflow extending from immune-cell characterization and cell-population selection to stage-associated pathway analysis and candidate compound prioritization.
+
+The primary focus is the identification of transcriptional changes in NK-like cells between early- and late-stage HGSOC, followed by the computational prioritization and pharmacological annotation of candidate compounds.
 
 ## Research Objectives
 
 - Characterize the immune-cell landscape of HGSOC tumors using single-cell transcriptomic data.
-- Identify NK-associated cell populations and characterize their transcriptional profiles.
-- Investigate differences between early- and late-stage disease using patient-level pseudobulk analysis.
+- Identify and characterize NK-associated cell populations within the tumor microenvironment.
+- Investigate differences between early- and late-stage disease using patient-level pseudobulk differential expression analysis.
 - Identify stage-associated biological pathways using Hallmark gene-set enrichment analysis.
-- Prioritize compounds with the potential to reverse stage-associated transcriptional signatures using the Connectivity Map (CMap).
-- Investigate drug–gene interaction information and pharmacological and clinical annotations for prioritized compounds using DGIdb and DrugBank.
+- Prioritize candidate compounds with the potential to reverse stage-associated transcriptional signatures using the Connectivity Map (CMap).
+- Investigate drug–gene interactions and pharmacological and clinical annotations for prioritized compounds using DGIdb and DrugBank.
 
-## Study Workflow
+## Study Design and Cell Populations
 
-The analysis followed these major steps:
+The study included seven HGSOC tumor samples from the GSE184880 dataset, classified into early- and late-stage disease groups.
 
-1. **Data acquisition:** Retrieval of the HGSOC single-cell RNA-seq dataset GSE184880.
-2. **Quality control and preprocessing:** Filtering of low-quality cells and normalization using Seurat.
-3. **Dimensionality reduction and clustering:** PCA, neighborhood graph construction, clustering, and UMAP visualization.
-4. **Cell annotation:** Identification of immune-cell populations using canonical marker genes, supported by SingleR and CellTypist.
-5. **NK-associated population selection:** Selection of NK-associated populations for downstream stage-based analyses.
-6. **Pseudobulk aggregation:** Aggregation of raw gene counts at the patient level.
-7. **Differential expression:** Comparison of early- and late-stage samples using DESeq2.
-8. **Pathway analysis:** Hallmark gene-set enrichment analysis to identify stage-associated biological programs.
-9. **Drug prioritization:** Querying stage-associated transcriptional signatures against CMap.
-10. **Drug annotation:** Investigation of drug–gene interactions using DGIdb and pharmacological and clinical information using DrugBank.
+Following immune-cell characterization and T/NK/ILC subclustering, two populations were selected for downstream investigation:
+
+- **NK-like population (cluster 0):** The primary population for stage-associated differential expression, pathway analysis, and CMap-based drug prioritization.
+- **ILC3 population (cluster 11):** Included as a complementary population for stage-associated differential expression and pathway-level investigation.
+
+The NK-like designation represents an operational cluster annotation and should not be interpreted as evidence of a completely homogeneous or exclusively NK-cell population.
+
+Patient-level pseudobulk profiles were generated using raw gene counts. The resulting analyses included:
+
+| Population | Early-stage profiles | Late-stage profiles | Total |
+|---|---:|---:|---:|
+| NK-like | 3 | 4 | 7 |
+| ILC3 | 3 | 3 | 6 |
+
+Patients, rather than individual cells, were treated as the biological replicates in downstream differential expression analysis.
 
 ## Dataset
 
 | Characteristic | Description |
 |---|---|
-| Dataset | GSE184880 |
+| Dataset accession | GSE184880 |
 | Data type | Single-cell RNA sequencing |
 | Disease | High-grade serous ovarian cancer |
 | Number of tumor samples | 7 |
-| Comparison | Early-stage vs. late-stage disease |
-| Analysis platform | R / Seurat |
+| Disease-stage comparison | Early-stage vs. late-stage |
+| Analysis platform | R |
+| Main single-cell framework | Seurat |
 
 The dataset is publicly available through the NCBI Gene Expression Omnibus:
 
-[ GSE184880 – NCBI GEO ](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184880)
+**[GSE184880 – NCBI GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE184880)**
+
+## Study Workflow
+
+The computational workflow consisted of the following major steps:
+
+1. **Data acquisition:** Retrieval of the HGSOC scRNA-seq dataset GSE184880.
+2. **Quality control and preprocessing:** Assessment of cell quality, filtering of low-quality cells, and normalization using Seurat.
+3. **Dimensionality reduction and clustering:** PCA, neighborhood graph construction, clustering, and UMAP visualization.
+4. **Cell annotation:** Characterization of cell populations using canonical marker genes, supported by SingleR and CellTypist.
+5. **T/NK/ILC subclustering:** Identification and annotation of immune-cell subpopulations.
+6. **Population selection:** Selection of cluster 0 (NK-like) and cluster 11 (ILC3) for downstream investigation.
+7. **Pseudobulk aggregation:** Aggregation of raw gene counts at the patient level for each selected population.
+8. **Differential expression analysis:** Comparison of early- and late-stage samples using DESeq2.
+9. **Pathway enrichment:** Preranked Hallmark GSEA using DESeq2 Wald statistics.
+10. **Drug prioritization:** Querying the NK-like stage-associated transcriptional signature against CMap.
+11. **Drug annotation:** Investigation of drug–gene interactions and pharmacological information using DGIdb and DrugBank.
 
 ## Methods
 
@@ -63,64 +89,101 @@ Single-cell RNA-seq data were processed using the Seurat framework. Quality cont
 
 A total of **37,818 cells** were initially available, of which **29,390 cells** were retained following quality control, corresponding to approximately **77.7%** of the initial cell population.
 
-### 2. Cell-State Annotation
+### 2. Cell-State Annotation and Population Selection
 
 Cell populations were characterized using canonical marker genes. SingleR and CellTypist were used as supporting annotation tools to assist cell-type identification.
 
-NK-associated populations were selected for downstream analyses. The resulting annotations were used to investigate transcriptional differences among immune-cell populations and between disease stages.
+Following global immune-cell characterization, T/NK/ILC subclustering was performed to investigate immune-cell heterogeneity in greater detail.
+
+Two populations were selected for downstream stage-based analyses:
+
+- **Cluster 0 (NK-like):** Selected as the primary population for pseudobulk differential expression, Hallmark GSEA, and CMap-based drug prioritization.
+- **Cluster 11 (ILC3):** Selected as a complementary population for pseudobulk differential expression and pathway-level investigation.
+
+The NK-like label is an operational annotation based on the analyzed cluster and does not imply that the population is necessarily composed exclusively of conventional NK cells.
 
 ### 3. Patient-Level Pseudobulk Analysis
 
 To account for the biological replication structure of the dataset, raw gene counts were aggregated at the patient level.
 
-Pseudobulk profiles were generated for the selected NK-associated population(s), and early-stage samples were compared with late-stage samples using DESeq2.
+Pseudobulk profiles were generated separately for the selected NK-like and ILC3 populations. Early-stage samples were compared with late-stage samples using DESeq2.
 
-This approach treats patients, rather than individual cells, as the biological replicates.
+The final pseudobulk analysis included:
 
-### 4. Differential Expression and Hallmark GSEA
+- NK-like: 7 patient-level profiles (3 early-stage and 4 late-stage).
+- ILC3: 6 patient-level profiles (3 early-stage and 3 late-stage).
 
-Differential expression analysis was performed using DESeq2.
+This approach treats patients, rather than individual cells, as the biological replicates and avoids treating individual cells from the same patient as independent biological observations.
 
-The resulting gene-level statistics were used for Hallmark gene-set enrichment analysis to identify biological pathways associated with early- and late-stage disease.
+### 4. Differential Expression Analysis
 
-The enrichment results were used to investigate stage-associated transcriptional programs, including immune-related and cellular signaling pathways.
+Differential expression analysis was performed using DESeq2 on patient-level pseudobulk raw counts.
 
-### 5. Connectivity Map-Based Drug Prioritization
+The comparison was defined as **late-stage versus early-stage disease**, with early-stage samples serving as the reference group.
 
-Stage-associated transcriptional signatures were queried against the Connectivity Map (CMap) to identify compounds with expression profiles predicted to oppose the queried disease-associated signature.
+The resulting gene-level statistics, including log2 fold changes, Wald statistics, p-values, and adjusted p-values, were used for downstream pathway analysis and drug-signature construction.
 
-Compounds with connectivity scores **≤ −90** were prioritized for downstream investigation.
+### 5. Hallmark Gene Set Enrichment Analysis
 
-Negative connectivity scores indicate an inverse relationship between a compound-associated perturbational signature and the query signature. These scores represent computational prioritization and do not establish therapeutic efficacy.
+Preranked Hallmark gene-set enrichment analysis was performed using the Wald statistics obtained from DESeq2.
 
-### 6. Drug–Gene and Pharmacological Annotation
+All genes with valid ranking statistics were included in the ranking procedure rather than restricting the analysis to statistically significant differentially expressed genes.
+
+Positive normalized enrichment scores (NES) indicate enrichment toward the late-stage group, whereas negative NES values indicate enrichment toward the early-stage group.
+
+The analysis was conducted separately for NK-like and ILC3 populations.
+
+For NK-like cells, the interferon-alpha response pathway was the only Hallmark pathway meeting the FDR-adjusted significance threshold. Additional pathways identified using nominal p-values were considered exploratory findings.
+
+No FDR-significant Hallmark pathways were identified in the ILC3 analysis.
+
+### 6. Connectivity Map-Based Drug Prioritization
+
+The NK-like DESeq2 results were used to construct the CMap query signature based on Wald-statistic ranking.
+
+The signature was derived independently of the GSEA leading-edge gene sets. Thus, CMap prioritization was based on the differential expression results rather than a subset of genes selected through pathway enrichment.
+
+Compounds with connectivity scores **≤ −90** were prioritized for further investigation.
+
+Negative connectivity scores indicate an inverse relationship between compound-associated perturbational expression profiles and the submitted query signature. Such compounds may represent candidates for further investigation based on their predicted transcriptional effects.
+
+These scores represent computational prioritization and do not establish therapeutic efficacy, clinical suitability, or activity against HGSOC.
+
+### 7. Drug–Gene and Pharmacological Annotation
 
 Prioritized compounds were further investigated using two complementary resources:
 
 - **DGIdb:** Used to retrieve drug–gene interaction records and their associated interaction annotations.
 - **DrugBank:** Used to investigate pharmacological properties, mechanisms of action, regulatory information, and documented clinical applications.
 
-DGIdb drug–gene interaction records should not, by themselves, be interpreted as definitive evidence of FDA approval. Regulatory status should be confirmed using the relevant DrugBank records and, where necessary, official regulatory labeling.
+Drug–gene interaction records were considered supporting annotation evidence rather than definitive proof of clinical approval or therapeutic relevance.
+
+Regulatory status and clinical applications should be interpreted in the context of the specific drug records and, where necessary, confirmed using official regulatory labeling.
 
 ## Key Results
 
-### Single-Cell Landscape
+### 1. Single-Cell Landscape
 
-- A total of 29,390 cells passed quality control.
-- NK-associated populations represented a major component of the annotated immune compartment.
-- UMAP visualization was used to display the annotated immune-cell landscape and the distribution of NK-associated populations.
+- A total of 37,818 cells were initially available.
+- Following quality control, 29,390 cells were retained for downstream analysis.
+- Global clustering and immune-cell characterization were performed to investigate the cellular composition of HGSOC tumors.
+- T/NK/ILC subclustering enabled the selection of NK-like and ILC3 populations for subsequent stage-associated analyses.
 
-### Stage-Associated Pathway Analysis
+### 2. Patient-Level Differential Expression and Pathway Analysis
 
-Patient-level pseudobulk analysis identified stage-associated transcriptional programs between early- and late-stage NK-associated cells.
+Patient-level pseudobulk analysis was performed separately for NK-like and ILC3 populations to investigate transcriptional differences between early- and late-stage disease.
 
-Hallmark GSEA highlighted differences in biological pathway enrichment between the two disease-stage groups.
+Hallmark GSEA identified stage-associated biological programs in both populations.
 
-### CMap Drug Prioritization
+In the NK-like population, **HALLMARK_INTERFERON_ALPHA_RESPONSE** was the only pathway meeting the FDR-adjusted significance threshold. Additional nominally enriched pathways were considered exploratory and should not be interpreted as FDR-significant findings.
 
-CMap analysis identified multiple compounds with strong negative connectivity scores.
+No FDR-significant Hallmark pathways were identified in the ILC3 analysis.
 
-Using a prioritization threshold of ≤ −90, seven candidate compounds were retained for further investigation:
+### 3. CMap-Based Drug Prioritization
+
+CMap analysis was performed using the NK-like stage-associated transcriptional signature.
+
+Applying a connectivity-score threshold of **≤ −90**, seven candidate compounds were prioritized for further investigation:
 
 - NSC-663284
 - Phenethyl isothiocyanate
@@ -130,23 +193,41 @@ Using a prioritization threshold of ≤ −90, seven candidate compounds were re
 - Mitomycin-C
 - SN-38
 
-### Mitomycin-C Prioritization
+These compounds represent computationally prioritized candidates based on their predicted inverse connectivity to the query signature. Their identification does not demonstrate therapeutic efficacy or clinical benefit in HGSOC.
+
+### 4. Mitomycin-C: Pharmacological and Clinical Annotation
 
 Among the prioritized compounds, mitomycin-C was selected for further pharmacological and clinical annotation.
 
 DrugBank analysis characterized mitomycin-C as a DNA-alkylating chemotherapeutic agent and documented its clinical use in low-grade upper tract urothelial cancer (LG-UTUC).
 
-This provides a clinically documented example of its use in a specific disease context. It does not establish efficacy in HGSOC or demonstrate that mitomycin-C is effective in a particular HGSOC stage.
+This provides a clinically documented example of its use in a specific disease context. However, this annotation does not establish efficacy in HGSOC or demonstrate that mitomycin-C is effective in a particular HGSOC stage.
 
-## Figures and Poster
+Further experimental investigation would be required to assess its relevance to HGSOC.
 
-The main figures generated for this project are available in the `figures/` directory.
+## Figures and Presentation Materials
 
-The conference poster is available in:
+The repository contains selected visualizations and presentation materials generated during the project.
 
-`poster/HGSOC_Poster.pdf`
+### Presentation Materials
 
-The poster was presented at the **3rd International Congress of Cancer Genomics and the First Provincial Congress of Cancer Genomics**, held on 4–6 November 2026.
+Available in the `Presentation_materials/` directory:
+
+- Conference poster.
+- Accepted conference abstract.
+
+### Analysis Results
+
+Selected results and visualizations are organized in the `Results/` directory:
+
+- **Clustering:** Global cluster-size summaries.
+- **CMap:** CMap results and prioritized candidate-compound visualization.
+- **GSEA:** Hallmark enrichment results.
+- **Metadata:** Sample-level metadata.
+- **Pseudobulk:** Differential expression tables.
+- **QC:** Quality-control visualizations before and after filtering.
+- **RDS:** Selected serialized R objects and analysis results.
+- **Umap:** Global and immune-cell subclustering visualizations.
 
 ## Repository Structure
 
@@ -155,7 +236,7 @@ HGSOC-NK-Stage-Based-Drug-Repurposing-scRNA-Seq-Analysis/
 │
 ├── Presentation_materials/
 │   ├── Cancer Genomics Poster.jpg
-│   └── Cancer Genomics abstract.pdf
+│   └── Cancer genomics abstract.pdf
 │
 ├── Results/
 │   ├── Clustering/
@@ -204,51 +285,56 @@ HGSOC-NK-Stage-Based-Drug-Repurposing-scRNA-Seq-Analysis/
 └── README.md
 ```
 
-*The directory and script names above describe the intended organization. Actual filenames may differ depending on the analysis files included in the repository.*
-
 ## Reproducibility and Data Availability
 
 The analysis was performed in R using publicly available transcriptomic data and bioinformatics resources.
 
 The original dataset can be accessed through NCBI GEO using accession **GSE184880**.
 
-Analysis scripts and selected output files are provided in this repository to document the computational workflow.
+The repository provides the analysis scripts, configuration file, selected intermediate objects, and representative result files to document the computational workflow.
 
 For reproducibility:
 
-1. Download the original dataset from GEO.
-2. Install the R packages required by the corresponding analysis scripts.
-3. Update input and output directory paths as needed.
-4. Run the scripts in the order indicated by their filenames.
-5. Consult the corresponding result folders for generated outputs.
+1. Clone or download this repository.
+2. Download the original GSE184880 dataset from NCBI GEO.
+3. Install the R packages and other software dependencies required by the analysis scripts.
+4. Review and configure the project paths and parameters in `config.yaml`.
+5. Ensure that the input data are placed in the expected project directories.
+6. Execute the numbered scripts in their intended order, beginning with project setup.
+7. Consult the corresponding subdirectories in `Results/` for generated outputs.
 
-Package versions and software requirements should be recorded alongside the scripts to support exact reproduction of the analysis.
+The numbered scripts are intended to represent the sequential analysis workflow. Exact reproduction may depend on the software environment, package versions, reference resources, and configuration parameters used during the original analysis.
 
 ## Limitations
 
 This study is an exploratory computational investigation and has several limitations:
 
-- The analysis includes seven HGSOC tumor samples, limiting the number of independent biological replicates.
+- The analysis includes only seven HGSOC tumor samples, limiting the number of independent biological replicates.
 - Stage-associated findings should be interpreted cautiously because of the limited sample size and potential inter-patient heterogeneity.
-- CMap connectivity scores provide computational predictions and do not demonstrate drug efficacy or clinical benefit.
+- The NK-like population represents an operational cluster annotation and may retain cellular heterogeneity.
+- CMap connectivity scores provide computational predictions and do not demonstrate drug efficacy, safety, or clinical benefit.
 - Drug–gene interaction and pharmacological annotations depend on the coverage and evidence available in the referenced databases.
-- The proposed mitomycin-C candidate requires further validation in appropriate experimental models before any therapeutic conclusions can be drawn.
+- The prioritization of mitomycin-C does not establish its therapeutic relevance to HGSOC.
+- Independent validation using appropriate experimental models and larger patient cohorts is required before drawing translational conclusions.
 
 ## Conclusion
 
-This project presents an integrated single-cell and pseudobulk transcriptomic framework for investigating stage-associated NK-cell programs in HGSOC and prioritizing candidate compounds for further investigation.
+This project presents an integrated single-cell and patient-level pseudobulk transcriptomic framework for investigating stage-associated NK-like cell programs in HGSOC and prioritizing candidate compounds for further investigation.
 
-By combining cell-level characterization, patient-level differential expression, pathway enrichment, CMap analysis, and pharmacological annotation, the study provides a computational strategy for exploring stage-informed drug-repurposing hypotheses in the HGSOC tumor microenvironment.
+By combining cell-level characterization, patient-level differential expression, Hallmark pathway enrichment, CMap-based compound prioritization, and pharmacological annotation, the study provides a computational strategy for exploring stage-informed drug-repurposing hypotheses in the HGSOC tumor microenvironment.
+
+The findings provide a basis for further investigation rather than direct therapeutic recommendations.
 
 ## Conference Presentation
 
 **3rd International Congress of Cancer Genomics and the First Provincial Congress of Cancer Genomics**
 
-4–6 November 2026
+**Date:** 4–6 November 2026  
+**Location:** Isfahan, Iran
 
-Isfahan, Iran
+**Poster title:**
 
-**Poster title:** *Stage-Based Drug Repurposing in High-Grade Serous Ovarian Cancer Using Single-Cell and Pseudobulk Transcriptomic Analysis of NK Cells.*
+*Stage-Based Drug Repurposing in High-Grade Serous Ovarian Cancer Using Single-Cell and Pseudobulk Transcriptomic Analysis of NK Cells.*
 
 ## Authors and Contributions
 
@@ -272,4 +358,4 @@ We acknowledge the authors of the GSE184880 dataset and the developers and maint
 
 ---
 
-**Disclaimer:** This repository documents computational research and candidate prioritization. It does not provide clinical recommendations or establish the safety or efficacy of any compound for HGSOC.
+**Disclaimer:** This repository documents computational research and candidate-compound prioritization. It does not provide clinical recommendations or establish the safety or efficacy of any compound for HGSOC.
