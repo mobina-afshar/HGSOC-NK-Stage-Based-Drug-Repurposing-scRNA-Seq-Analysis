@@ -1,0 +1,8 @@
+python:         C:/Users/asus/AppData/Local/R/cache/R/reticulate/uv/cache/archive-v0/otQl3ddC-IdkWLy5/Scripts/python.exe
+libpython:      C:/Users/asus/AppData/Local/R/cache/R/reticulate/uv/python/cpython-3.12.14-windows-x86_64-none/python312.dll
+pythonhome:     C:/Users/asus/AppData/Local/R/cache/R/reticulate/uv/cache/archive-v0/otQl3ddC-IdkWLy5
+virtualenv:     C:/Users/asus/AppData/Local/R/cache/R/reticulate/uv/cache/archive-v0/otQl3ddC-IdkWLy5/Scripts/activate_this.py
+version:        3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]
+Architecture:   64bit
+numpy:          C:/Users/asus/AppData/Local/R/cache/R/reticulate/uv/cache/archive-v0/otQl3ddC-IdkWLy5/Lib/site-packages/numpy
+numpy_version:  2.5.4
